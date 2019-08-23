@@ -1,10 +1,14 @@
 {
-  "name": "message_tagging",
+  "name": "email_tagging",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node ./lib/hello.js",
+    "repl": "node",
+    "build": "tsc",
+    "clean": "rm -rf lib",
+    "test": "BUILD=dev PROJECTS=test webpack --progress --colors && cd lib && node --inspect ../node_modules/jasmine/bin/jasmine.js tests.js"
   },
   "keywords": [],
   "author": "",
@@ -14,7 +18,12 @@
   },
   "dependencies": {
     "@types/express": "^4.17.0",
+    "@types/mailparser": "^2.4.0",
     "@types/node": "^12.7.1",
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "mailparser": "^2.7.1",
+    "morgan": "^1.9.1",
+    "node-html-parser": "^1.1.16",
+    "node-mbox": "^1.0.0"
   }
 }
