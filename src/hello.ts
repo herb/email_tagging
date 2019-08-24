@@ -1,9 +1,12 @@
+const async_fn = require("async");
 const express = require("express");
 const morgan = require("morgan");
-const auth = require("./google-auth");
 const cookie_parser = require("cookie-parser");
 const cookie_session = require("cookie-session");
 const slogger = require("node-slogger");
+
+const auth = require("./google-auth");
+const detect = require("./detect");
 
 const app = express();
 
@@ -15,6 +18,16 @@ app.get("/", function(req: any, res: any) {
   res.send("hello world!");
 });
 
+function get_subject(headers:any) {
+  for (let kv of headers) {
+    if (kv.name =='Subject') {
+      return kv.value;
+    }
+  }
+
+  return null;
+}
+
 app.get("/detect", function(req: any, res: any) {
   var tokens = "";
   if (!req.session.tokens) {
@@ -22,27 +35,65 @@ app.get("/detect", function(req: any, res: any) {
   } else {
     tokens = JSON.parse(req.session.tokens);
   }
+
   var gmail = auth.get_gmail_client(tokens);
-  gmail.users.labels.list({ userId: "me" }, function(err: any, gmail_res: any) {
-    if (err) {
-      slogger.warn("api returned an error: " + err);
-      res.send("error occurred: " + err);
-    }
-
-    var labels = gmail_res.data.labels;
-
-    var res_text = "";
-    if (labels.length == 0) {
-      res_text = "No labels found.";
-    } else {
-      res_text;
-      for (var i = 0; i < labels.length; i++) {
-        var label = labels[i];
-        res_text += `${label.name}\n`;
+  gmail.users.messages.list(
+    { userId: "me" },
+    function(err: any, gmail_res: any) {
+      if (err) {
+        slogger.warn("messages.list api returned an error: " + err);
+        res.send("error occurred: " + err);
       }
-    }
 
-    res.send(res_text);
+      const next_page_token = gmail_res.data.nextPageToken;
+
+      var messages = gmail_res.data.messages;
+      async_fn.map(messages, (msg:any, cb:any) => {
+        gmail.users.messages.get({ userId: "me", id: msg.id }, (err:any, msg_res:any) => {
+          cb(err, msg_res);
+        });
+    },
+    (err:any, message_info_list:any) => {
+      if (err) {
+        return res.send('error: ' + err);
+      }
+      for (let c in message_info_list) {
+        let msg = message_info_list[c].data;
+
+        let subject = get_subject(msg.payload.headers);
+
+        let parts = msg.payload.parts;
+
+        let text = null;
+        let html = null;
+        if (!parts) {
+          if (msg.payload.mimeType == "text/plain") {
+            text = msg.payload.body.data;
+          } else if (msg.payload.mimeType == "text/html") {
+            html = Buffer.from(
+                msg.payload.body.data, 'base64').toString('ascii');
+          }
+        } else {
+          for (let part of parts) {
+            if (part.mimeType == "text/plain") {
+              text = part.body.data
+            } else if (part.mimeType == "text/html") {
+              html = Buffer.from(part.body.data, 'base64').toString('ascii');
+            }
+          }
+        }
+
+        // TODO: add some text handlers
+        let found = detect.html_detect_dbx(text, html);
+
+        slogger.info(`${msg.id}: date=${new Date(parseInt(msg.internalDate))}, subject=${subject}`);
+        if (found) {
+          slogger.info('    ', found);
+        }
+      }
+      res.send('done');
+    });
+
   });
 });
 
