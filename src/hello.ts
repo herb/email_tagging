@@ -14,13 +14,19 @@ app.use(morgan("tiny"));
 app.use(cookie_parser());
 app.use(cookie_session({ name: "session", keys: ["1337"] }));
 
+app.set('view engine', 'pug');
+app.use(express.static('static'));
+
 app.get("/", function(req: any, res: any) {
-  res.send("hello world!");
+  if (!req.session.tokens) {
+    return res.redirect(302, '/gmail/auth');
+  }
+  res.render('index', { cdn_prefix: "https://cdnjs.cloudflare.com", title: 'Hey', message: 'Hello there!' })
 });
 
-function get_subject(headers:any) {
+function get_header_value(headers:any, key:string) {
   for (let kv of headers) {
-    if (kv.name =='Subject') {
+    if (kv.name == key) {
       return kv.value;
     }
   }
@@ -31,14 +37,15 @@ function get_subject(headers:any) {
 app.get("/detect", function(req: any, res: any) {
   var tokens = "";
   if (!req.session.tokens) {
-    return res.send("no auth tokens");
+    return res.send({"error": "no auth tokens"});
   } else {
     tokens = JSON.parse(req.session.tokens);
   }
 
   var gmail = auth.get_gmail_client(tokens);
+
   gmail.users.messages.list(
-    { userId: "me" },
+    { userId: "me", pageToken: req.query.next_page_token },
     function(err: any, gmail_res: any) {
       if (err) {
         slogger.warn("messages.list api returned an error: " + err);
@@ -55,15 +62,19 @@ app.get("/detect", function(req: any, res: any) {
     },
     (err:any, message_info_list:any) => {
       if (err) {
-        return res.send('error: ' + err);
+        return res.send({"error": err});
       }
+      let results:object[] = [];
       for (let c in message_info_list) {
         let msg = message_info_list[c].data;
 
-        let subject = get_subject(msg.payload.headers);
+        let msg_subject = get_header_value(msg.payload.headers, 'Subject');
+        let msg_date = new Date(parseInt(msg.internalDate));
 
         let parts = msg.payload.parts;
 
+        // pull out text and html parts of the message (and deal with
+        // potentially multipart messages)
         let text = null;
         let html = null;
         if (!parts) {
@@ -86,12 +97,25 @@ app.get("/detect", function(req: any, res: any) {
         // TODO: add some text handlers
         let found = detect.html_detect_dbx(text, html);
 
-        slogger.info(`${msg.id}: date=${new Date(parseInt(msg.internalDate))}, subject=${subject}`);
+        slogger.info(`${msg.id}: date=${msg_date}, subject=${msg_subject}`);
         if (found) {
           slogger.info('    ', found);
+          results.push({
+            date: msg_date,
+            from: get_header_value(msg.payload.headers, 'From'),
+            to: get_header_value(msg.payload.headers, 'To'),
+            cc: get_header_value(msg.payload.headers, 'Cc'),
+            subject: msg_subject,
+            detections: [found],
+          });
         }
       }
-      res.send('done');
+      res.send({data: {
+        'founds': results,
+        'next_page_token': next_page_token,
+        'nb_detected': results.length,
+        'nb_scanned': 100,
+      }});
     });
 
   });

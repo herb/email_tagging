@@ -1,0 +1,43 @@
+html
+  head
+    title Email Tagging
+    link(
+      href=cdn_prefix + '/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css'
+      rel='stylesheet'
+      media='screen'
+    )
+    link(
+      href=cdn_prefix + '/ajax/libs/font-awesome/4.1.0/css/font-awesome.min.css'
+      rel='stylesheet'
+      media='screen'
+    )
+  body
+    div(class='container-fluid')
+      div(class='col-md-10 col-md-offset-1 container-wrapper')
+        div(class='row')
+          h3
+            span(id='nb_detected')
+            span detected in
+            span(id='nb_scanned')
+            span scanned
+        div(class='row')
+          table(class='table')
+            thead
+              tr
+                th(scope='col') date
+                th(scope='col') metadata
+                th(scope='col') detections
+            tbody(id='results')
+
+    script(
+      src=cdn_prefix + '/ajax/libs/jquery/3.4.1/jquery.min.js'
+    )
+    script(
+      src=cdn_prefix + '/ajax/libs/twitter-bootstrap/3.1.1/js/bootstrap.min.js'
+    )
+    script(
+      src='https://cdn.jsdelivr.net/npm/async@3.1.0/dist/async.min.js'
+      integrity="sha256-Pdd9BewcEhv9cjGCHEY0Hqk6Fmj6izNGrw1/mo61zRI="
+      crossorigin="anonymous"
+    )
+    script(src='/index.js')
