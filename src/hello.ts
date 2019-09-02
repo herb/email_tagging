@@ -95,20 +95,22 @@ app.get("/detect", function(req: any, res: any) {
           }
         }
 
-        // TODO: add some text handlers
-        let found = detect.html_detect_dbx(text, html);
-
         slogger.info(`${msg.id}: date=${msg_date}, subject=${msg_subject}`);
-        if (found) {
-          slogger.info('    ', found);
-          results.push({
-            date: msg_date,
-            from: get_header_value(msg.payload.headers, 'From'),
-            to: get_header_value(msg.payload.headers, 'To'),
-            cc: get_header_value(msg.payload.headers, 'Cc'),
-            subject: msg_subject,
-            detections: [found],
-          });
+
+        // TODO: speed up here in case of lots of detectors is a thread pool
+        // TODO: add some text handlers
+        for (let found of [detect.text_detect_links(text, html), detect.html_detect_links(text, html)]) {
+          if (found) {
+            slogger.info('    ', found);
+            results.push({
+              date: msg_date,
+              from: get_header_value(msg.payload.headers, 'From'),
+              to: get_header_value(msg.payload.headers, 'To'),
+              cc: get_header_value(msg.payload.headers, 'Cc'),
+              subject: msg_subject,
+              detections: [found],
+            });
+          }
         }
       }
       res.send({data: {

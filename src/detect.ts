@@ -28,7 +28,7 @@ const parse_html = require("node-html-parser").parse;
 const url = require("url");
 
 
-export function html_detect_dbx(text:string, html:string) {
+export function html_detect_links(text:string, html:string) {
   const body_html_root = parse_html(html);
 
   const link_elems = body_html_root.querySelectorAll("a");
@@ -47,6 +47,21 @@ export function html_detect_dbx(text:string, html:string) {
         }
       }
     }
+  }
+
+  return null;
+}
+
+const dbx_re = /https:\/\/www.dropbox.com\/s\//;
+
+export function text_detect_links(text:string, html:string) {
+  if (!text) {
+    return null;
+  }
+  const matches = text.search(dbx_re);
+  if (matches != -1) {
+    console.log('matches', matches);
+    return {source: 'text', _type: 'webshare', description: 'dropbox', snippet: text.slice(matches, 50)}
   }
 
   return null;
