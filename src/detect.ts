@@ -27,8 +27,7 @@ fs.ReadStream("tests/cloud_shares.mbox").pipe(mbox);
 const parse_html = require("node-html-parser").parse;
 const url = require("url");
 
-
-export function html_detect_links(text:string, html:string) {
+export function html_detect_links(text: string, html: string) {
   const body_html_root = parse_html(html);
 
   const link_elems = body_html_root.querySelectorAll("a");
@@ -36,14 +35,24 @@ export function html_detect_links(text:string, html:string) {
     if (link_elem.attributes.href) {
       var href = url.parse(link_elem.attributes.href);
       if (href.hostname === "www.dropbox.com") {
-        if (href.pathname.startsWith('/s/')) {
-          return {source: 'html', _type: 'webshare', description: 'dropbox', snippet: href.href};
+        if (href.pathname.startsWith("/s/")) {
+          return {
+            source: "html",
+            _type: "webshare",
+            description: "dropbox",
+            snippet: href.href
+          };
         }
       }
 
       if (href.hostname === "drive.google.com") {
-        if (href.pathname == '/open') {
-          return {source: 'html', _type: 'webshare', description: 'google-drive', snippet: href.href};
+        if (href.pathname == "/open") {
+          return {
+            source: "html",
+            _type: "webshare",
+            description: "google-drive",
+            snippet: href.href
+          };
         }
       }
     }
@@ -54,14 +63,19 @@ export function html_detect_links(text:string, html:string) {
 
 const dbx_re = /https:\/\/www.dropbox.com\/s\//;
 
-export function text_detect_links(text:string, html:string) {
+export function text_detect_links(text: string, html: string) {
   if (!text) {
     return null;
   }
   const matches = text.search(dbx_re);
   if (matches != -1) {
-    console.log('matches', matches);
-    return {source: 'text', _type: 'webshare', description: 'dropbox', snippet: text.slice(matches, 50)}
+    console.log("matches", matches);
+    return {
+      source: "text",
+      _type: "webshare",
+      description: "dropbox",
+      snippet: text.slice(matches, 50)
+    };
   }
 
   return null;
