@@ -53,6 +53,7 @@ app.get("/detect", function(req: any, res: any) {
       }
 
       const next_page_token = gmail_res.data.nextPageToken;
+      const estimated_result_size = gmail_res.data.resultSizeEstimate;
 
       var messages = gmail_res.data.messages;
       async_fn.map(messages, (msg:any, cb:any) => {
@@ -115,6 +116,7 @@ app.get("/detect", function(req: any, res: any) {
         'next_page_token': next_page_token,
         'nb_detected': results.length,
         'nb_scanned': 100,
+        'nb_estimated': estimated_result_size,
       }});
     });
 

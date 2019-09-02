@@ -11,15 +11,24 @@ html
       rel='stylesheet'
       media='screen'
     )
+    style.
+      .stats_number {
+        margin-left: 5px;
+        margin-right: 5px;
+        font-weight: bold;
+      }
   body
     div(class='container-fluid')
       div(class='col-md-10 col-md-offset-1 container-wrapper')
         div(class='row')
           h3
-            span(id='nb_detected')
+            span(id='nb_detected', class='stats_number')
             span detected in
-            span(id='nb_scanned')
-            span scanned
+            span(id='nb_scanned', class='stats_number')
+            span scanned of approximately
+            span(id='nb_estimated', class='stats_number')
+            span messages
+            img(src='/loading.gif', style="width: 128px;")
         div(class='row')
           table(class='table')
             thead

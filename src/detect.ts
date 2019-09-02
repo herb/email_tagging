@@ -36,11 +36,17 @@ export function html_detect_dbx(text:string, html:string) {
     if (link_elem.attributes.href) {
       var href = url.parse(link_elem.attributes.href);
       if (href.hostname === "www.dropbox.com") {
-        return href;
+        if (href.pathname.startsWith('/s/')) {
+          return {source: 'html', _type: 'webshare', description: 'dropbox', snippet: href.href};
+        }
+      }
+
+      if (href.hostname === "drive.google.com") {
+        if (href.pathname == '/open') {
+          return {source: 'html', _type: 'webshare', description: 'google-drive', snippet: href.href};
+        }
       }
     }
-
-    // TODO: find all links
   }
 
   return null;
