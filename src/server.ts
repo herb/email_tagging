@@ -23,8 +23,6 @@ app.get("/", function(req: any, res: any) {
   }
   res.render("index", {
     cdn_prefix: "https://cdnjs.cloudflare.com",
-    title: "Hey",
-    message: "Hello there!"
   });
 });
 
