@@ -13,3 +13,12 @@
 7. breakup callback nesting hell
     * promises? async.waterfall?
 8. 'parameterize' startup options--specifically location of config
+9. better abstraction for detectors
+    * explicit `interface`
+10. more robust UX
+    * need to catch and surface backend errors better
+    * need to do better/hostically at retries
+11. cache results ; placekeeping
+    * probably persist to a local sqlite
+    * alternative is only keep place or store limited results in webstorage
+12. figure out how to use pug and typescript on browser side templates/code

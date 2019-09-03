@@ -7,6 +7,7 @@ const slogger = require("node-slogger");
 
 const auth = require("./google-auth");
 const detect = require("./detect");
+const message_util = require("./message_util");
 
 const app = express();
 
@@ -22,56 +23,9 @@ app.get("/", function(req: any, res: any) {
     return res.redirect(302, "/gmail/auth");
   }
   res.render("index", {
-    cdn_prefix: "https://cdnjs.cloudflare.com",
+    cdn_prefix: "https://cdnjs.cloudflare.com"
   });
 });
-
-function get_header_value(headers: any, key: string) {
-  for (let kv of headers) {
-    if (kv.name == key) {
-      return kv.value;
-    }
-  }
-
-  return null;
-}
-
-function get_message_info(msg: any) {
-  let msg_subject = get_header_value(msg.payload.headers, "Subject");
-  let msg_date = new Date(parseInt(msg.internalDate));
-
-  let parts = msg.payload.parts;
-
-  // pull out text and html parts of the message (and deal with
-  // potentially multipart messages)
-  let text = null;
-  let html = null;
-  if (!parts) {
-    if (msg.payload.mimeType == "text/plain") {
-      text = msg.payload.body.data;
-    } else if (msg.payload.mimeType == "text/html") {
-      html = Buffer.from(msg.payload.body.data, "base64").toString("ascii");
-    }
-  } else {
-    for (let part of parts) {
-      if (part.mimeType == "text/plain") {
-        text = part.body.data;
-      } else if (part.mimeType == "text/html") {
-        html = Buffer.from(part.body.data, "base64").toString("ascii");
-      }
-    }
-  }
-
-  return {
-    date: msg_date,
-    _from: get_header_value(msg.payload.headers, "From"),
-    to: get_header_value(msg.payload.headers, "To"),
-    cc: get_header_value(msg.payload.headers, "Cc"),
-    subject: msg_subject,
-    body_text: text,
-    body_html: html
-  };
-}
 
 app.get("/detect", function(req: any, res: any) {
   var tokens = "";
@@ -109,26 +63,59 @@ app.get("/detect", function(req: any, res: any) {
           let results: object[] = [];
           for (let t of threads) {
             let thread = t.data;
-            slogger.info("thread", thread.id, "snippet", thread.snippet);
-            for (let msg of thread.messages) {
-              let msg_info = get_message_info(msg);
 
-              for (let found of [
-                detect.text_detect_links(
+            // debugging
+            let snip: string = "";
+            let msg_info = message_util.get_message_info(thread.messages[0]);
+            if (thread.snippet) {
+              snip = thread.snippet;
+            } else {
+              snip = msg_info.subject;
+            }
+            slogger.info("thread", thread.id, 'date', msg_info.date, "snippet", snip);
+
+            // thread base detections
+            let found_thread = detect.thread_detect_lateral_phishing(thread);
+            if (found_thread) {
+              let info = found_thread[0];
+              results.push({
+                date: info.date,
+                from: info._from,
+                to: info.to,
+                cc: info.cc,
+                subject: info.subject,
+                detections: [found_thread[1]]
+              });
+            }
+
+            // message based detections
+            for (let msg of thread.messages) {
+              let msg_info = message_util.get_message_info(msg);
+
+              let detections = [];
+              for (let found_msg of [
+                detect.message_text_detect_links(
                   msg_info.body_text,
                   msg_info.body_html
                 ),
-                detect.html_detect_links(msg_info.body_text, msg_info.body_html)
+                detect.message_html_detect_links(
+                  msg_info.body_text,
+                  msg_info.body_html
+                )
               ]) {
-                if (found) {
-                  slogger.info("    ", found);
+                if (found_msg) {
+                  detections.push(found_msg);
+                }
+
+                if (detections.length > 0) {
+                  slogger.info("    ", detections);
                   results.push({
                     date: msg_info.date,
                     from: msg_info._from,
                     to: msg_info.to,
                     cc: msg_info.cc,
                     subject: msg_info.subject,
-                    detections: [found]
+                    detections: detections
                   });
                 }
               }
