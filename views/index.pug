@@ -27,7 +27,8 @@ html
             span(id='nb_scanned', class='stats_number')
             span scanned threads of approximately
             span(id='nb_estimated', class='stats_number')
-            img(src='/loading.gif', style="width: 128px;")
+            img(id='spinner', src='/loading.gif', style="width: 128px;")
+            span(id='done', style='display:none') DONE!
         div(class='row')
           table(class='table')
             thead

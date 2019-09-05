@@ -95,6 +95,8 @@ $(document).ready(function() {
   }
 
   async.doWhilst(do_one_batch, do_check, function(err) {
+    $('#spinner').hide();
+    $('#done').show();
     console.log("done", err);
   });
 });
