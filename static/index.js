@@ -33,43 +33,7 @@ $(document).ready(function() {
       // append results
       for (var index in one_batch_result.data.founds) {
         var found = one_batch_result.data.founds[index];
-        var $new_result = $("<tr></tr>");
-
-        $new_result.append("<td>" + found.date + "</td>");
-
-        var $meta = $('<ul class="list-group"></ul>');
-        $meta.append(
-          '<li class="list-group-item">' + "<b>To:</b>" + found.to + "</li>"
-        );
-        $meta.append(
-          '<li class="list-group-item">' + "<b>From:</b>" + found.from + "</li>"
-        );
-        $meta.append(
-          '<li class="list-group-item">' +
-            "<b>Subject:</b>" +
-            found.subject +
-            "</li>"
-        );
-        var $meta_td = $("<td></td>");
-        $meta_td.append($meta);
-        $new_result.append($meta_td);
-
-        var detect_td_str = "<td><ul>";
-        for (var i = 0; i < found.detections.length; i++) {
-          var detect = found.detections[i];
-          detect_td_str +=
-            '<li>in "' +
-            detect.source +
-            '" detected "' +
-            detect._type +
-            '" from "' +
-            detect.description +
-            '": ' +
-            detect.snippet +
-            "</li>";
-        }
-        detect_td_str += "</td>";
-        $new_result.append($(detect_td_str));
+        var $new_result = $(one_result_line(found));
 
         $("#results").append($new_result);
       }

@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node ./lib/server.js",
     "repl": "node",
-    "build": "tsc",
+    "build": "tsc && node ./lib/render_template_fragments.js",
+    "buildfrags": "node ./lib/render_template_fragments.js",
     "clean": "rm -rf lib",
     "test": "BUILD=dev PROJECTS=test webpack --progress --colors && cd lib && node --inspect ../node_modules/jasmine/bin/jasmine.js tests.js"
   },

@@ -1,0 +1,19 @@
+tr
+  td=date
+  td
+    ul(class='list-group')
+      li(class='list-group-item')
+        b To:
+        span= to
+      li(class='list-group-item')
+        b From:
+        span= from
+      li(class='list-group-item')
+        b Subject:
+        span= subject
+  td
+    ul
+      each d in detections
+        li.
+          in "#{d.source}" detected "#{d._type}"
+          from "#{d.description}": #{d.snippet}
