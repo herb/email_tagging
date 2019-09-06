@@ -1,4 +1,4 @@
-# prep
+# install and running
 
 It's assumed you have a `config.json` in the parent directory of where you run
 this that has credentials for a gmail api app.
@@ -13,11 +13,24 @@ this that has credentials for a gmail api app.
     "client_callback_url": "http://localhost:3000/gmail/auth/callback"
   },
 }
+
+It's also assumed the Gmail API is enabled in the API console with
+`http://localhost:3000/gmail/auth/callback` listed as an `authorized redirect
+URIs`.
 ```
 
-# install and running
+then yarn install, build, and start
 
 ```
 $ yarn
 $ yarn build && yarn start
 ```
+
+# using it
+
+1. visit http://localhost:3000
+    * this should redirect you to `/gmail/auth`
+    * and grant your app authorization to read your mailbox.
+2. if everything worked it'll redirect you back to the homepage and start
+   processing your emails
+3. yay

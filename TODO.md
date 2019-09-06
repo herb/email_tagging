@@ -22,3 +22,5 @@
     * probably persist to a local sqlite
     * alternative is only keep place or store limited results in webstorage
 12. figure out how to use pug and typescript on browser side templates/code
+13. parameterize/config-ify various things, e.g.
+    * config.js location

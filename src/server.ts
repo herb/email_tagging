@@ -147,7 +147,7 @@ app.get("/gmail/auth/callback", function(req: any, res: any) {
     (tokens: any) => {
       slogger.info("tokens: " + JSON.stringify(tokens));
       req.session.tokens = JSON.stringify(tokens);
-      res.redirect(302, "/detect");
+      res.redirect(302, "/");
     },
     (err: any) => {
       res.send("auth failed: " + err);
