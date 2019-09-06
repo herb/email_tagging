@@ -1,6 +1,6 @@
 html
   head
-    title Email Tagging
+    title Email Scanner
     link(
       href=cdn_prefix + '/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css'
       rel='stylesheet'
@@ -18,6 +18,10 @@ html
         font-weight: bold;
       }
   body
+    div(class='page-header')
+      h1 Email Scanner
+        small= email
+
     div(class='container-fluid')
       div(class='col-md-10 col-md-offset-1 container-wrapper')
         div(class='row')

@@ -22,8 +22,12 @@ app.get("/", function(req: any, res: any) {
   if (!req.session.tokens) {
     return res.redirect(302, "/gmail/auth");
   }
+
+  const profile = JSON.parse(req.session.profile);
+
   res.render("index", {
-    cdn_prefix: "https://cdnjs.cloudflare.com"
+    cdn_prefix: "https://cdnjs.cloudflare.com",
+    email: profile.emailAddress,
   });
 });
 
@@ -145,9 +149,19 @@ app.get("/gmail/auth/callback", function(req: any, res: any) {
   var tokens = auth.get_oauth_tokens_from_code(req.query.code);
   tokens.then(
     (tokens: any) => {
-      slogger.info("tokens: " + JSON.stringify(tokens));
-      req.session.tokens = JSON.stringify(tokens);
-      res.redirect(302, "/");
+      const gmail = auth.get_gmail_client(tokens);
+      const profile = gmail.users.getProfile({ userId: 'me' });
+      profile.then(
+        (profile: any) => {
+          req.session.tokens = JSON.stringify(tokens);
+          req.session.profile = JSON.stringify(profile.data);
+
+          res.redirect(302, '/');
+        },
+        (err: any) => {
+          res.send("profile retrieval failed: " + err);
+        }
+      );
     },
     (err: any) => {
       res.send("auth failed: " + err);

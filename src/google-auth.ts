@@ -5,7 +5,6 @@ const fs = require("fs");
 const google_config = JSON.parse(fs.readFileSync("../config.json")).googleapi;
 
 const scope = [
-  //"https://www.googleapis.com/oauth2/v3/userinfo",
   "https://www.googleapis.com/auth/gmail.readonly"
 ];
 
