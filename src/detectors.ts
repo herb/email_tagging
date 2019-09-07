@@ -29,7 +29,7 @@ const url = require("url");
 
 const message_util = require("./message_util");
 
-export function message_html_detect_links(text: string, html: string) {
+export function message_html_detect_links(text: string | null, html: string | null) {
   const body_html_root = parse_html(html);
 
   const link_elems = body_html_root.querySelectorAll("a");
@@ -65,7 +65,7 @@ export function message_html_detect_links(text: string, html: string) {
 
 const dbx_re = /https:\/\/www.dropbox.com\/s\//;
 
-export function message_text_detect_links(text: string, html: string) {
+export function message_text_detect_links(text: string | null, html: string | null) {
   if (!text) {
     return null;
   }

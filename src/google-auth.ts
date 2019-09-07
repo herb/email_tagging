@@ -1,6 +1,7 @@
 import { google } from "googleapis";
 
 const fs = require("fs");
+const slogger = require("node-slogger");
 
 const google_config = JSON.parse(fs.readFileSync("../config.json")).googleapi;
 
@@ -42,15 +43,15 @@ export function get_gmail_client(tokens: any) {
   return gmail;
 }
 
-interface Tokens {
+export interface Tokens {
   [key: string]: string;
 }
 
-interface Profile {
+export interface Profile {
   emailAddress: string;
 }
 
-interface PersistedAuthInfo {
+export interface PersistedAuthInfo {
   [email: string]: [Tokens, Profile];
 }
 

@@ -21,6 +21,7 @@
     "typescript": "^3.5.3"
   },
   "dependencies": {
+    "@types/async": "^3.0.1",
     "@types/express": "^4.17.0",
     "@types/mailparser": "^2.4.0",
     "@types/node": "^12.7.1",
