@@ -6,7 +6,7 @@ const cookie_session = require("cookie-session");
 const slogger = require("node-slogger");
 
 const auth = require("./google-auth");
-const detect = require("./detect");
+const detectors = require("./detectors");
 const message_util = require("./message_util");
 
 const app = express();
@@ -86,7 +86,7 @@ app.get("/detect", function(req: any, res: any) {
             );
 
             // thread base detections
-            let found_thread = detect.thread_detect_lateral_phishing(thread);
+            let found_thread = detectors.thread_detect_lateral_phishing(thread);
             if (found_thread) {
               let info = found_thread[0];
               results.push({
@@ -105,11 +105,11 @@ app.get("/detect", function(req: any, res: any) {
 
               let detections = [];
               for (let found_msg of [
-                detect.message_text_detect_links(
+                detectors.message_text_detect_links(
                   msg_info.body_text,
                   msg_info.body_html
                 ),
-                detect.message_html_detect_links(
+                detectors.message_html_detect_links(
                   msg_info.body_text,
                   msg_info.body_html
                 )
