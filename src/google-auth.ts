@@ -4,9 +4,10 @@ const fs = require("fs");
 
 const google_config = JSON.parse(fs.readFileSync("../config.json")).googleapi;
 
-const scope = [
-  "https://www.googleapis.com/auth/gmail.readonly"
-];
+// where tokens and profile information is persisted
+const AUTH_INFO_JSON_PATH = "../auth_info.json";
+
+const scope = ["https://www.googleapis.com/auth/gmail.readonly"];
 
 function create_connection() {
   return new google.auth.OAuth2(
@@ -39,4 +40,38 @@ export function get_gmail_client(tokens: any) {
   const gmail = google.gmail({ version: "v1", auth });
 
   return gmail;
+}
+
+interface Tokens {
+  [key: string]: string;
+}
+
+interface Profile {
+  emailAddress: string;
+}
+
+interface PersistedAuthInfo {
+  [email: string]: [Tokens, Profile];
+}
+
+export function persist_tokens_and_profile(
+  req_session: any,
+  tokens: any,
+  profile: { emailAddress: string }
+) {
+  let existing_info: PersistedAuthInfo = {};
+  if (fs.existsSync(AUTH_INFO_JSON_PATH)) {
+    try {
+      existing_info = JSON.parse(fs.readFileSync(AUTH_INFO_JSON_PATH));
+    } catch (e) {
+      slogger.err("unable to read or parse auth info", e);
+    }
+  }
+  let email: string = profile.emailAddress;
+  existing_info[email] = [tokens, profile];
+
+  fs.writeFileSync(AUTH_INFO_JSON_PATH, JSON.stringify(existing_info));
+
+  req_session.tokens = JSON.stringify(tokens);
+  req_session.profile = JSON.stringify(profile);
 }

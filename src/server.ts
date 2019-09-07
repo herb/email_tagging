@@ -27,7 +27,7 @@ app.get("/", function(req: any, res: any) {
 
   res.render("index", {
     cdn_prefix: "https://cdnjs.cloudflare.com",
-    email: profile.emailAddress,
+    email: profile.emailAddress
   });
 });
 
@@ -76,7 +76,14 @@ app.get("/detect", function(req: any, res: any) {
             } else {
               snip = msg_info.subject;
             }
-            slogger.info("thread", thread.id, 'date', msg_info.date, "snippet", snip);
+            slogger.info(
+              "thread",
+              thread.id,
+              "date",
+              msg_info.date,
+              "snippet",
+              snip
+            );
 
             // thread base detections
             let found_thread = detect.thread_detect_lateral_phishing(thread);
@@ -150,13 +157,12 @@ app.get("/gmail/auth/callback", function(req: any, res: any) {
   tokens.then(
     (tokens: any) => {
       const gmail = auth.get_gmail_client(tokens);
-      const profile = gmail.users.getProfile({ userId: 'me' });
+      const profile = gmail.users.getProfile({ userId: "me" });
       profile.then(
         (profile: any) => {
-          req.session.tokens = JSON.stringify(tokens);
-          req.session.profile = JSON.stringify(profile.data);
+          auth.persist_tokens_and_profile(req.session, tokens, profile.data);
 
-          res.redirect(302, '/');
+          res.redirect(302, "/");
         },
         (err: any) => {
           res.send("profile retrieval failed: " + err);
