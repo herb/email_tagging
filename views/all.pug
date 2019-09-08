@@ -1,0 +1,66 @@
+html
+  head
+    title Email Scanner
+    link(
+      href=cdn_prefix + '/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css'
+      rel='stylesheet'
+      media='screen'
+    )
+    link(
+      href=cdn_prefix + '/ajax/libs/font-awesome/4.1.0/css/font-awesome.min.css'
+      rel='stylesheet'
+      media='screen'
+    )
+    style.
+      .stats_number {
+        margin-left: 5px;
+        margin-right: 5px;
+        font-weight: bold;
+      }
+  body
+    div(class='page-header')
+      h1 Email Scanner
+        small (all)
+
+    div(class='container-fluid')
+      div(class='col-md-10 col-md-offset-1 container-wrapper')
+        div(class='row')
+          img(id='spinner', src='/loading.gif', style="width: 128px;")
+        div(class='row')
+          table(class='table')
+            thread
+              tr
+                th(scope='col') email
+                th(scope='col') detected
+                th(scope='col') scanned
+                th(scope='col') estimated
+            tbody
+              each email_hash in email_hashes
+                tr
+                  th(scope='col')= email_hash[0]
+                  th(scope='col' id='nb_detected_' + email_hash[1])
+                  th(scope='col' id='nb_scanned_' + email_hash[1])
+                  th(scope='col' id='nb_estimated_' + email_hash[1])
+        div(class='row')
+          table(class='table')
+            thead
+              tr
+                th(scope='col') email
+                th(scope='col') date
+                th(scope='col') metadata
+                th(scope='col') detections
+            tbody(id='results')
+
+    script(
+      src=cdn_prefix + '/ajax/libs/jquery/3.4.1/jquery.min.js'
+    )
+    script(
+      src=cdn_prefix + '/ajax/libs/twitter-bootstrap/3.1.1/js/bootstrap.min.js'
+    )
+    script(
+      src='https://cdn.jsdelivr.net/npm/async@3.1.0/dist/async.min.js'
+      integrity="sha256-Pdd9BewcEhv9cjGCHEY0Hqk6Fmj6izNGrw1/mo61zRI="
+      crossorigin="anonymous"
+    )
+    script(src='/all.js')
+    script(src='/fragments/one_result_line.js')

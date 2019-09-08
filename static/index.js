@@ -10,20 +10,16 @@ $(document).ready(function() {
     $("#nb_scanned").text(nb_scanned);
     $("#nb_estimated").text(nb_estimated);
 
-    data = {};
+    var data = {};
     if (next_page_token) {
       data.next_page_token = next_page_token;
     }
-
-    $("#loading-spinner").toggleClass("lds-ring");
 
     $.ajax({
       type: "get",
       url: "/detect",
       data: data
     }).done(function(one_batch_result) {
-      $("#loading-spinner").toggleClass("lds-ring");
-
       console.log("detect result", one_batch_result);
       if (one_batch_result.error) {
         alert("failed: ", one_batch_result.error);
@@ -59,8 +55,8 @@ $(document).ready(function() {
   }
 
   async.doWhilst(do_one_batch, do_check, function(err) {
-    $('#spinner').hide();
-    $('#done').show();
+    $("#spinner").hide();
+    $("#done").show();
     console.log("done", err);
   });
 });

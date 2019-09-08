@@ -1,3 +1,5 @@
+import * as async_fn from "async";
+import * as crypto from "crypto";
 const express = require("express");
 const morgan = require("morgan");
 const cookie_parser = require("cookie-parser");
@@ -29,6 +31,24 @@ app.get("/", function(req: any, res: any) {
   });
 });
 
+app.get("/all", (req: any, res: any) => {
+  let auth_info_by_email = auth.load_persisted_tokens_and_profiles();
+
+  res.render("all", {
+    cdn_prefix: "https://cdnjs.cloudflare.com",
+    email_hashes: Object.keys(auth_info_by_email).map(x => {
+      return [
+        x,
+        crypto
+          .createHash("md5")
+          .update(x)
+          .digest("hex")
+      ];
+    })
+  });
+});
+
+// TOOD: change this to `post`
 app.get("/detect", function(req: any, res: any) {
   let tokens = null;
   if (!req.session.tokens) {
@@ -39,12 +59,50 @@ app.get("/detect", function(req: any, res: any) {
 
   let profile = JSON.parse(req.session.profile);
 
-  detect.next_page(profile.emailAddress, tokens, req.query.next_page_token, (err:any, data:any) => {
-    if (err) {
-      res.send({ error: err });
+  detect.next_page(
+    profile.emailAddress,
+    tokens,
+    req.query.next_page_token,
+    (err: any, data: any) => {
+      if (err) {
+        res.send({ error: err });
+      }
+      return res.send({ data: data });
     }
-    return res.send({ data: data });
+  );
+});
+
+app.post("/detect_all", (req: any, res: any) => {
+  let auth_info_by_email = auth.load_persisted_tokens_and_profiles();
+
+  let auth_info_list = Object.keys(auth_info_by_email).map((email: string) => {
+    let auth_info = auth_info_by_email[email];
+    return { email: email, tokens: auth_info[0], profile: auth_info[1] };
   });
+
+  let next_page_token_by_email: any = {};
+  if (req.body) {
+    next_page_token_by_email = JSON.parse(req.body);
+  }
+
+  async_fn.map(
+    auth_info_list,
+    (auth_info: any, cb: any) => {
+      detect.next_page(
+        auth_info.email,
+        auth_info.tokens,
+        next_page_token_by_email[auth_info.email],
+        cb
+      );
+    },
+    (err: any, results: any) => {
+      if (err) {
+        res.send({ error: err });
+      } else {
+        res.send({ data: results });
+      }
+    }
+  );
 });
 
 app.get("/gmail/auth", function(req: any, res: any) {

@@ -76,3 +76,11 @@ export function persist_tokens_and_profile(
   req_session.tokens = JSON.stringify(tokens);
   req_session.profile = JSON.stringify(profile);
 }
+
+export function load_persisted_tokens_and_profiles() {
+  try {
+    return JSON.parse(fs.readFileSync(AUTH_INFO_JSON_PATH));
+  } catch (e) {
+    slogger.err("unable to read or parse persisted auth info", e);
+  }
+}

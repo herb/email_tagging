@@ -33,4 +33,7 @@ $ yarn build && yarn start
     * and grant your app authorization to read your mailbox.
 2. if everything worked it'll redirect you back to the homepage and start
    processing your emails
+3. if you have oauth'd to multiple mailboxes you can visit
+   http://localhost:3000/all and it'll scan all the mailboxes it knowns about
+   all at once.
 3. yay

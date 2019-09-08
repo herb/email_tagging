@@ -1,13 +1,14 @@
 import * as async_fn from "async";
+import * as crypto from "crypto";
 const slogger = require("node-slogger");
 
 import * as auth from "./google-auth";
 import * as detectors from "./detectors";
 import * as message_util from "./message_util";
 
-
 export interface NextPageData {
   email: string;
+  email_hash: string;
 
   founds: object[];
 
@@ -18,14 +19,15 @@ export interface NextPageData {
   nb_estimated: number;
 }
 
-
 interface NextPageCallback {
-  (error: any, data?: NextPageData) : void;
-
+  (error: any, data?: NextPageData): void;
 }
 export function next_page(
-    email:string, tokens:auth.Tokens, next_page_token:string, callback:NextPageCallback)
-{
+  email: string,
+  tokens: auth.Tokens,
+  next_page_token: string,
+  callback: NextPageCallback
+) {
   const gmail = auth.get_gmail_client(tokens);
 
   gmail.users.threads.list(
@@ -122,6 +124,10 @@ export function next_page(
 
           return callback(null, {
             email: email,
+            email_hash: crypto
+              .createHash("md5")
+              .update(email)
+              .digest("hex"),
             founds: results,
             next_page_token: next_page_token,
             nb_detected: results.length,
