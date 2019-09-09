@@ -1,7 +1,20 @@
+# intro
+
+This is a scanner for your gmail messages. It currently scans for
+* unrestricted shares on dropbox and gdrive
+* potential lateral phishing attempts
+
+It also scans multiple mailboxes at the same time assuming you've oauth access
+for each mailbox.
+
+Everything is very hacky at this point. No tests to speak of. Hardcoded paths
+for config files and persisted credentials. But the bones are there. Feedback
+welcome. :)
+
 # install and running
 
-It's assumed you have a `config.json` in the parent directory of where you run
-this that has credentials for a gmail api app.
+It's assumed you have a `config.json` in the parent directory, `../`, of where
+you run this that has credentials for a gmail api app.
 
 `config.json` should have the following form:
 ```
