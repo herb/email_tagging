@@ -24,12 +24,16 @@ mbox.on("message", function(msg: any) {
 fs.ReadStream("tests/cloud_shares.mbox").pipe(mbox);
 */
 
+const slogger = require("node-slogger");
 const parse_html = require("node-html-parser").parse;
 const url = require("url");
 
 const message_util = require("./message_util");
 
-export function message_html_detect_links(text: string | null, html: string | null) {
+export function message_html_detect_links(
+  text: string | null,
+  html: string | null
+) {
   const body_html_root = parse_html(html);
 
   const link_elems = body_html_root.querySelectorAll("a");
@@ -65,7 +69,10 @@ export function message_html_detect_links(text: string | null, html: string | nu
 
 const dbx_re = /https:\/\/www.dropbox.com\/s\//;
 
-export function message_text_detect_links(text: string | null, html: string | null) {
+export function message_text_detect_links(
+  text: string | null,
+  html: string | null
+) {
   if (!text) {
     return null;
   }
@@ -96,7 +103,7 @@ function message_sorter_reverse(a: any, b: any) {
   }
 }
 
-const LATERAL_PHISHING_TIME_THRESHOLD:number = 1000 * 60 * 60 * 24 * 90; // 90 days
+const LATERAL_PHISHING_TIME_THRESHOLD: number = 1000 * 60 * 60 * 24 * 90; // 90 days
 const LATERAL_PHISHING_TRUSTED_DOMAINS: string[] = []; // trust no one
 
 // if it's a reply to an old thread that has a link to an untrusted domain, it
@@ -105,7 +112,7 @@ const LATERAL_PHISHING_TRUSTED_DOMAINS: string[] = []; // trust no one
 // we could further refine this in an enterprise POV by restricting replies
 // from within the domain
 export function thread_detect_lateral_phishing(thread: any) {
-  console.log("    thread length", thread.messages.length);
+  slogger.debug("    thread length", thread.messages.length);
   if (thread.messages.length == 1) {
     return null;
   }
@@ -122,7 +129,7 @@ export function thread_detect_lateral_phishing(thread: any) {
   let mi_newest = message_util.get_message_info(newest);
   let mi_next = message_util.get_message_info(next);
 
-  console.log("    thread delta", time_delta, mi_newest.date, mi_next.date);
+  slogger.debug("    thread delta", time_delta, mi_newest.date, mi_next.date);
 
   if (time_delta > LATERAL_PHISHING_TIME_THRESHOLD) {
     // should we exclude emails from this mailbox? probably not
@@ -139,8 +146,8 @@ export function thread_detect_lateral_phishing(thread: any) {
     for (let link_elem of link_elems) {
       if (link_elem.attributes.href) {
         var href = url.parse(link_elem.attributes.href);
-        if (href.protocol == 'mailto:') {
-            continue;
+        if (href.protocol == "mailto:") {
+          continue;
         }
         if (LATERAL_PHISHING_TRUSTED_DOMAINS.indexOf(href.hostname) == -1) {
           // FIXME: standardize this interface for detect across thread and

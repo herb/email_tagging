@@ -48,7 +48,7 @@ app.get("/all", (req: any, res: any) => {
   });
 });
 
-// TOOD: change this to `post`
+// TODO: change this to `post`
 app.get("/detect", function(req: any, res: any) {
   let tokens = null;
   if (!req.session.tokens) {
@@ -72,7 +72,8 @@ app.get("/detect", function(req: any, res: any) {
   );
 });
 
-app.post("/detect_all", (req: any, res: any) => {
+// TODO: change this to `post`
+app.get("/detect_all", (req: any, res: any) => {
   let auth_info_by_email = auth.load_persisted_tokens_and_profiles();
 
   let auth_info_list = Object.keys(auth_info_by_email).map((email: string) => {
@@ -81,9 +82,11 @@ app.post("/detect_all", (req: any, res: any) => {
   });
 
   let next_page_token_by_email: any = {};
-  if (req.body) {
-    next_page_token_by_email = JSON.parse(req.body);
+  if (req.query) {
+    next_page_token_by_email = req.query;
   }
+
+  console.log("next_page_token_by_email", next_page_token_by_email);
 
   async_fn.map(
     auth_info_list,

@@ -41,7 +41,7 @@ $(document).ready(function() {
       // update counters
       nb_detected += one_batch_result.data.nb_detected;
       nb_scanned += one_batch_result.data.nb_scanned;
-      nb_estimated += one_batch_result.data.nb_estimated;
+      nb_estimated = one_batch_result.data.nb_estimated;
 
       // remember next page
       next_page_token = one_batch_result.data.next_page_token;

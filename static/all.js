@@ -28,11 +28,10 @@ $(document).ready(function() {
   }
 
   var next_page_token_by_email = {};
+  // FIXME: this is more like 'info_by_email'
   var count_by_email = new DefaultDict(Count);
-  console.log("count_by_email", count_by_email);
 
-  function do_one_batch(cb) {
-    // update count ui
+  function update_count_ui() {
     for (var email in count_by_email) {
       var count = count_by_email[email];
 
@@ -40,16 +39,18 @@ $(document).ready(function() {
       $("#nb_scanned_" + count.email_hash).text(count.nb_scanned);
       $("#nb_estimated_" + count.email_hash).text(count.nb_estimated);
     }
+  }
+
+  function do_one_batch(cb) {
+    // update count ui
+    update_count_ui();
 
     $.ajax({
-      type: "post",
+      type: "get",
       url: "/detect_all",
       data: next_page_token_by_email
     }).done(function(one_batch_results) {
       console.log("detect results", one_batch_results);
-
-      // reset so mailboxes w/o next_page_tokens get 'removed'
-      next_page_token_by_email = {};
 
       if (one_batch_results.error) {
         alert("failed: ", one_batch_results.error);
@@ -60,7 +61,11 @@ $(document).ready(function() {
         var one_batch_result = one_batch_results.data[batch_index];
         var email = one_batch_result.email;
 
-        next_page_token_by_email[email] = one_batch_result.next_page_token;
+        if (one_batch_result.next_page_token) {
+          next_page_token_by_email[email] = one_batch_result.next_page_token;
+        } else {
+          next_page_token_by_email[email] = "done-done";
+        }
 
         for (var found_index in one_batch_result.founds) {
           var found = one_batch_result.founds[found_index];
@@ -74,7 +79,9 @@ $(document).ready(function() {
         count_by_email[email].email_hash = one_batch_result.email_hash;
         count_by_email[email].nb_detected += one_batch_result.nb_detected;
         count_by_email[email].nb_scanned += one_batch_result.nb_scanned;
-        count_by_email[email].nb_estimated += one_batch_result.nb_estimated;
+        if (one_batch_result.nb_estimated) {
+          count_by_email[email].nb_estimated = one_batch_result.nb_estimated;
+        }
       }
 
       cb();

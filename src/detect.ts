@@ -16,12 +16,20 @@ export interface NextPageData {
 
   nb_detected: number;
   nb_scanned: number;
-  nb_estimated: number;
+  nb_estimated: number | null;
 }
 
 interface NextPageCallback {
   (error: any, data?: NextPageData): void;
 }
+
+function hash_email(email: string): string {
+  return crypto
+    .createHash("md5")
+    .update(email)
+    .digest("hex");
+}
+
 export function next_page(
   email: string,
   tokens: auth.Tokens,
@@ -29,6 +37,21 @@ export function next_page(
   callback: NextPageCallback
 ) {
   const gmail = auth.get_gmail_client(tokens);
+
+  // semi-hack: for done things we return empty result
+  // FIXME: ideally the server never gets called
+  if (next_page_token === "done-done") {
+    return callback(null, {
+      email: email,
+      email_hash: hash_email(email),
+      founds: [],
+      next_page_token: next_page_token,
+
+      nb_detected: 0,
+      nb_scanned: 0,
+      nb_estimated: null
+    });
+  }
 
   gmail.users.threads.list(
     { userId: "me", pageToken: next_page_token },
@@ -38,7 +61,7 @@ export function next_page(
         callback(err);
       }
 
-      const next_page_token = gmail_res.data.nextPageToken;
+      const new_next_page_token = gmail_res.data.nextPageToken;
       const estimated_result_size = gmail_res.data.resultSizeEstimate;
 
       const threads = gmail_res.data.threads;
@@ -65,7 +88,7 @@ export function next_page(
             } else {
               snip = msg_info.subject;
             }
-            slogger.info(
+            slogger.debug(
               "thread",
               thread.id,
               "date",
@@ -124,12 +147,9 @@ export function next_page(
 
           return callback(null, {
             email: email,
-            email_hash: crypto
-              .createHash("md5")
-              .update(email)
-              .digest("hex"),
+            email_hash: hash_email(email),
             founds: results,
-            next_page_token: next_page_token,
+            next_page_token: new_next_page_token,
             nb_detected: results.length,
             nb_scanned: 100,
             nb_estimated: estimated_result_size
