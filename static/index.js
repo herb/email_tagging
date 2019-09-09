@@ -5,10 +5,14 @@ $(document).ready(function() {
 
   var next_page_token = null;
 
-  function do_one_batch(cb) {
+  function update_counts_ui() {
     $("#nb_detected").text(nb_detected);
     $("#nb_scanned").text(nb_scanned);
     $("#nb_estimated").text(nb_estimated);
+  }
+
+  function do_one_batch(cb) {
+    update_counts_ui();
 
     var data = {};
     if (next_page_token) {
@@ -55,8 +59,11 @@ $(document).ready(function() {
   }
 
   async.doWhilst(do_one_batch, do_check, function(err) {
+    update_counts_ui();
+
     $("#spinner").hide();
     $("#done").show();
+
     console.log("done", err);
   });
 });
