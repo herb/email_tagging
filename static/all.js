@@ -28,7 +28,6 @@ $(document).ready(function() {
   }
 
   var next_page_token_by_email = {};
-  // FIXME: this is more like 'info_by_email'
   var count_by_email = new DefaultDict(Count);
 
   function update_count_ui() {
@@ -38,6 +37,12 @@ $(document).ready(function() {
       $("#nb_detected_" + count.email_hash).text(count.nb_detected);
       $("#nb_scanned_" + count.email_hash).text(count.nb_scanned);
       $("#nb_estimated_" + count.email_hash).text(count.nb_estimated);
+
+      if (next_page_token_by_email[email] == "done-done") {
+        $("#status_" + count.email_hash).text("done");
+      } else {
+        $("#status_" + count.email_hash).text("running");
+      }
     }
   }
 

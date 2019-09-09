@@ -34,6 +34,7 @@ html
                 th(scope='col') detected
                 th(scope='col') scanned
                 th(scope='col') estimated
+                th(scope='col') staus
             tbody
               each email_hash in email_hashes
                 tr
@@ -41,6 +42,7 @@ html
                   th(scope='col' id='nb_detected_' + email_hash[1])
                   th(scope='col' id='nb_scanned_' + email_hash[1])
                   th(scope='col' id='nb_estimated_' + email_hash[1])
+                  th(scope='col' id='status_' + email_hash[1])
         div(class='row')
           table(class='table')
             thead
