@@ -36,7 +36,7 @@
     "node-html-parser": "^1.1.16",
     "node-mbox": "^1.0.0",
     "node-slogger": "^2.0.0",
-    "pug": "^2.0.4"
+    "pug": "^3.0.1"
   },
   "husky": {
     "hooks": {
